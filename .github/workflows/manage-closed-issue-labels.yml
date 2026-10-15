@@ -1,0 +1,71 @@
+# Copyright 2026 The MathWorks, Inc.
+name: Manage closed issue labels
+
+on:
+    issues:
+        types: [closed]
+
+permissions:
+    issues: write
+
+jobs:
+    remove-transient-labels:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Remove transient labels
+              uses: actions/github-script@v9
+              with:
+                  script: |
+                      const labelsToRemove = ['needs-triage', 'waiting-for-info', 'in-progress'];
+                      const current = context.payload.issue.labels.map(l => l.name);
+                      for (const label of labelsToRemove) {
+                        if (current.includes(label)) {
+                          await github.rest.issues.removeLabel({
+                            owner: context.repo.owner,
+                            repo: context.repo.repo,
+                            issue_number: context.issue.number,
+                            name: label
+                          });
+                        }
+                      }
+
+
+    add-duplicate-label:
+        if: github.event.issue.state_reason == 'duplicate'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Add duplicate label
+              uses: actions/github-script@v9
+              with:
+                  script: |
+                      const current = context.payload.issue.labels.map(l => l.name);
+                      if (current.includes('duplicate')) {
+                        core.info('Label "duplicate" already present, skipping.');
+                        return;
+                      }
+                      await github.rest.issues.addLabels({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: context.issue.number,
+                        labels: ['duplicate']
+                      });
+
+    add-wontfix-label:
+        if: github.event.issue.state_reason == 'not_planned'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Add wontfix label
+              uses: actions/github-script@v9
+              with:
+                  script: |
+                      const current = context.payload.issue.labels.map(l => l.name);
+                      if (current.includes('wontfix')) {
+                        core.info('Label "wontfix" already present, skipping.');
+                        return;
+                      }
+                      await github.rest.issues.addLabels({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        issue_number: context.issue.number,
+                        labels: ['wontfix']
+                      });
