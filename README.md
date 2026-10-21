@@ -32,6 +32,7 @@ Run MATLAB® and Simulink® with AI coding agents. This installer sets up everyt
 - One or more supported AI coding agents:
   - [OpenAI Codex](https://openai.com/codex/)
   - [Claude Code](https://claude.com/product/claude-code)
+  - [GitHub Copilot CLI](https://github.com/features/copilot)
 
 - Supported platforms:
   - Windows (x64)
