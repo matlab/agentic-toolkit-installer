@@ -10,6 +10,7 @@ Run MATLAB® and Simulink® with AI coding agents. This installer sets up everyt
 - [Requirements](#requirements)
 - [Download the Installer](#download-the-installer)
 - [Get Started](#get-started)
+- [Update the Installer and Toolkits](#update-the-installer-and-toolkits)
 - [Advanced Usage](#advanced-usage)
   - [Command Reference](#command-reference)
   - [Run Programmatically](#run-programmatically)
@@ -32,8 +33,7 @@ Run MATLAB® and Simulink® with AI coding agents. This installer sets up everyt
 - One or more supported AI coding agents:
   - [OpenAI Codex](https://openai.com/codex/)
   - [Claude Code](https://claude.com/product/claude-code)
-  - [GitHub Copilot CLI](https://github.com/features/copilot)
-
+  - [GitHub Copilot CLI](https://github.com/features/copilot) or [GitHub Copilot in Visual Studio Code](https://code.visualstudio.com/docs/setup/copilot). Note: if you previously ran the Installer `v0.3.0` or earlier, then to configure GitHub Copilot for the first time you must do a fresh install of the Installer. Run [`uninstall`](#uninstall), then [`install`](#install) to configure GitHub Copilot.
 - Supported platforms:
   - Windows (x64)
   - Linux (x64)
@@ -44,13 +44,7 @@ Run MATLAB® and Simulink® with AI coding agents. This installer sets up everyt
 <details>
 <summary><b>Windows (x64)</b></summary>
 
-Download [`agentic-toolkit-installer-windows-x64.exe` (GitHub)](https://github.com/matlab/agentic-toolkit-installer/releases/latest/download/agentic-toolkit-installer-windows-x64.exe).
-
-Rename the file to:
-
-```text
-agentic-toolkit-installer.exe
-```
+Download [`agentic-toolkit-installer.exe` (GitHub)](https://github.com/matlab/agentic-toolkit-installer/releases/latest/download/agentic-toolkit-installer.exe).
 
 </details>
 
@@ -121,7 +115,7 @@ chmod +x agentic-toolkit-installer
 ## Get Started
 
 > [!IMPORTANT]
-> **Simulink users:** If you previously used Simulink Agentic Toolkit with a custom `startup.m` file, remove these commands from the file:<br>`addpath(fullfile(getenv('USERPROFILE'), '.matlab', 'agentic-> toolkits', 'simulink'))`<br>`satk_initialize`
+> **Simulink users:** If you previously used Simulink Agentic Toolkit with a custom [`startup.m`](https://www.mathworks.com/help/matlab/ref/startup.html) file, remove these commands from the file:<br>`addpath(fullfile(getenv('USERPROFILE'), '.matlab', 'agentic-toolkits', 'simulink'))`<br>`satk_initialize`
 
 
 Run the installer:
@@ -134,18 +128,28 @@ Run the installer:
 ./agentic-toolkit-installer install
 ```
 
-The installer asks you questions to configure your coding agents with settings including skills, scopes, and MCP settings. 
+Use the installer to configure your coding agents with settings including skills, scopes, and MCP settings. Then restart your agents to begin using them with MATLAB and Simulink. 
 
-When the installer finishes, restart your agents to begin using them with MATLAB and Simulink. 
+To connect your agent to a running MATLAB session, remember to run [`shareMATLABSession()`](https://github.com/matlab/matlab-mcp-server/tree/main#arguments) in that MATLAB session.
 
 You can also:
 
 - See a summary of your configuration: `.\agentic-toolkit-installer.exe status`
 - Make changes to your configuration: `.\agentic-toolkit-installer.exe configure`
 - Uninstall your configuration: `.\agentic-toolkit-installer.exe uninstall`
-- Update the installer to get the latest binary with fixes and enhancements: `.\agentic-toolkit-installer.exe install`
+- Update the installer or toolkits: for details, see [Update Installer and Toolkits](#update-the-installer-and-toolkits).
 
-For advanced usage, see the next section. 
+For advanced usage, see [Advanced Usage](#advanced-usage).
+
+## Update the Installer and Toolkits
+
+**Update the installer:** To get the latest version of the installer binary, with fixes and enhancements, download it again by following the steps in [Download the Installer](#download-the-installer).
+
+**Update the toolkits:** To get the latest versions of the toolkits, including the MATLAB MCP Server, run `install`: `.\agentic-toolkit-installer.exe install --skip-configure`.
+
+The installer updates any agents you already configured, at user or project scope, to use the updated toolkits. Your existing configuration continues working with the updated toolkits. To add skill groups, run `.\agentic-toolkit-installer.exe configure` afterwards.
+
+To keep a toolkit at a specific version when you update, see [Pin Toolkit Versions](#pin-toolkit-versions).
 
 ## Advanced Usage
 
@@ -196,12 +200,12 @@ When you use both a system directory file and a CLI flag, the CLI flag takes pre
 The system directory is optional. The installer can run without it.
 </details>
 
---- 
+---
 **Each command also accepts its own options:**
 
 #### `install`
 
-Download toolkits and install required MATLAB toolboxes into detected MATLAB installations. Automatically runs `configure` when complete. The command uses default values for options unless you specify custom values. 
+Download toolkits and install required MATLAB toolboxes into detected MATLAB installations. Automatically runs `configure` when complete. The command uses default values for options unless you specify custom values.
 
 ```powershell
 .\agentic-toolkit-installer.exe install [options]
@@ -235,15 +239,11 @@ Set up coding agents by registering MCP servers and skill groups. Choose agents,
 
 #### `status`
 
-Show installed toolkits, versions, configured agents, active skill groups, MCP settings, and other options.
+Show installed toolkits, MCP servers, MATLAB installations, and configured agents with their skill groups.
 
 ```powershell
-.\agentic-toolkit-installer.exe status [options]
+.\agentic-toolkit-installer.exe status
 ```
-
-| Option | Default | Description |
-|--------|---------|-------------|
-| `--verbose` | `false` | Show extended diagnostic information |
 
 #### `uninstall`
 
@@ -277,7 +277,7 @@ For scripted or CI/CD workflows, pass `--non-interactive` and provide all select
   --skill-group signal-processing
 ```
 
-In non-interactive mode, if you do not specify `--toolkit`, all toolkits are configured. If you do not specify `--skill-group`, the installer installs only required skill groups for the specified toolkits. 
+In non-interactive mode, if you do not specify `--toolkit`, all toolkits are configured. If you do not specify `--skill-group`, the installer installs only required skill groups for the specified toolkits.
 
 ### Pin Toolkit Versions
 
@@ -311,30 +311,80 @@ CLI flags take precedence over environment variables.
 
 ### Configure Proxies and Mirrors
 
-To download the toolkits from a local mirror, private repository, or filesystem path, create a `proxy.yaml` file:
-
-```yaml
-schema-version: 1
-
-toolkits:
-  matlab-agentic-toolkit:
-    repo: https://git.corp.example.com/matlab-mirror/matlab-agentic-toolkit
-    type: git
-
-  simulink-agentic-toolkit:
-    repo: /mnt/shared/agentic-toolkits/simulink-agentic-toolkit
-    type: filesystem
-```
-
-Then pass it during install:
+To install from a mirror or from local files instead of GitHub, create a `proxy.yaml` file and pass it with `--proxy`. Administrators can alternatively place `proxy.yaml` in the [system directory](#system-directory-details).
 
 ```powershell
 .\agentic-toolkit-installer.exe install --proxy proxy.yaml
 ```
 
-With `type: filesystem`, no network calls are made. The installer reads directly from the local path.
+The installer always installs all three toolkits. List each toolkit and specify its `repo`, otherwise it is installed from GitHub.
 
-Administrators can place `proxy.yaml` in the system directory for zero-flag enterprise installs. For details of the system directory, see the `system-dir` flag in [Global Options](#global-options).
+**Git mirror:** If your mirror has the same tags and release assets as GitHub (for example, GitHub Enterprise), you only need to specify `repo`. The `type` defaults to `git`. You can specify the `source` as either an explicit URL or by using placeholders for string interpolation, for example `<repo>/releases/download/<version>/simulink-agentic-toolkit.mltbx`.  For authenticating private mirrors, see [Authenticate with Private Repositories](#authenticate-with-private-repositories). 
+
+```yaml
+schema_version: 1
+
+toolkits:
+  matlab-agentic-toolkit:
+    repo: "https://git.corp.example.com/mirror/matlab-agentic-toolkit"
+
+  simulink-agentic-toolkit:
+    repo: "https://git.corp.example.com/mirror/simulink-agentic-toolkit"
+    matlab-packages:
+      - name: simulink-agentic-toolkit
+        source: "https://git.corp.example.com/mirror/binaries/simulink-agentic-toolkit.mltbx"
+
+  matlab-mcp-server:
+    repo: "https://git.corp.example.com/mirror/matlab-mcp-server"
+    mcp-servers:
+      - name: matlab
+        binary:
+          windows_x64: "https://git.corp.example.com/mirror/binaries/matlab-mcp-server-windows-x64.exe"
+          linux_x64: "https://git.corp.example.com/mirror/binaries/matlab-mcp-server-linux-x64"
+          macos_arm64: "https://git.corp.example.com/mirror/binaries/matlab-mcp-server-macos-arm64"
+          macos_x64: "https://git.corp.example.com/mirror/binaries/matlab-mcp-server-macos-x64"
+```
+
+**Local files:** With `type: filesystem`, the installer uses the folder exactly as it is on disk, even if it is a git clone, so check out the release tag you want first. Using `--version` does not change which files are installed, and using `type: git` with a local path is not supported.
+
+You must also specify the release artifacts each toolkit needs:
+
+1. Download the files listed under `mcp-servers` and `matlab-packages` in the `manifest.yaml` file of each toolkit:
+- [MATLAB MCP Server Manifest (GitHub)](https://github.com/matlab/matlab-mcp-server/blob/main/manifest.yaml)
+- [MATLAB Agentic Toolkit Manifest (GitHub)](https://github.com/matlab/matlab-agentic-toolkit/blob/main/manifest.yaml)
+- [Simulink Agentic Toolkit Manifest (GitHub)](https://github.com/matlab/simulink-agentic-toolkit/blob/main/manifest.yaml)
+2. Reference them by the same `name`. The `source` values can be local paths or `https://` URLs.
+3. For the MCP server binaries, specify paths for all four platforms: `linux_x64`, `macos_x64`, `macos_arm64`, and `windows_x64`.
+  
+```yaml
+schema_version: 1
+
+toolkits:
+  matlab-agentic-toolkit:
+    repo: "C:/agentic-toolkits/matlab-agentic-toolkit"
+    type: filesystem
+
+  simulink-agentic-toolkit:
+    repo: "C:/agentic-toolkits/simulink-agentic-toolkit"
+    type: filesystem
+    matlab-packages:
+      - name: simulink-agentic-toolkit
+        source: "C:/agentic-toolkits/binaries/simulink-agentic-toolkit.mltbx"
+
+  matlab-mcp-server:
+    repo: "C:/agentic-toolkits/matlab-mcp-server"
+    type: filesystem
+    mcp-servers:
+      - name: matlab
+        binary:
+          windows_x64: "C:/agentic-toolkits/binaries/matlab-mcp-server-windows-x64.exe"
+          linux_x64: "C:/agentic-toolkits/binaries/matlab-mcp-server-linux-x64"
+          macos_arm64: "C:/agentic-toolkits/binaries/matlab-mcp-server-macos-arm64"
+          macos_x64: "C:/agentic-toolkits/binaries/matlab-mcp-server-macos-x64"
+    matlab-packages:
+      - name: matlab-mcp-server
+        source: "C:/agentic-toolkits/binaries/MATLABMCPServerToolbox.mltbx"
+```
 
 ### Authenticate with Private Repositories
 
@@ -352,6 +402,7 @@ To avoid exposing the token, read it from a file instead of pasting it directly 
 ## Known Issues and Limitations
 
 - On Windows, `--help` output displays folder paths with escaped backslashes (`\\`) instead of single backslashes.
+- With `type: filesystem` in `proxy.yaml`, `--version` does not change which toolkit files are installed. The installer uses the folder as it is.
 - If you re-run `install` with a registry that no longer includes a previously installed toolkit, the installer does not remove that toolkit's artifacts.
 - The installer always registers MCP server entries at user scope, regardless of the `--scope` flag. The installer does not yet support project-scope MCP server registration.
 - The installer does not correctly update the `status` configuration summary if you configure your agents manually.
